@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package com.ortisan.kafkahandson;
+
+message Payment {
+  string id = 1;
+  string userId = 2;
+  double amount = 3;
+  string currency = 4;
+  int64 timestamp = 5;
+  google.protobuf.Timestamp timestamp = 5;
+}

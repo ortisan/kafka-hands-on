@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "Payment",
+  "namespace": "com.ortisan.kafkahandson",
+  "fields": [
+    { "name": "id", "type": "string" },
+    { "name": "userId", "type": "string" },
+    { "name": "amount", "type": "double" },
+    { "name": "currency", "type": "string" },
+    { "name": "timestamp", "type": "long" }
+  ]
+}
