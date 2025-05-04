@@ -1,0 +1,28 @@
+# Dependency directories
+node_modules/
+dist/
+
+# Build outputs
+build/
+coverage/
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Package files
+package-lock.json
+yarn.lock
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Generated files
+*.generated.*

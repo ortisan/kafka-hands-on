@@ -168,5 +168,4 @@ curl -X POST http://localhost:8081/subjects/transactions-value/versions \
   "schema": "$(cat schemas/payment.proto | sed 's/"/\\"/g' | tr -d '\n')"
 }
 EOF
-
 ```
