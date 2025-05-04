@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 package com.ortisan.kafkahandson;
 
 message Payment {
@@ -7,6 +9,5 @@ message Payment {
   string userId = 2;
   double amount = 3;
   string currency = 4;
-  int64 timestamp = 5;
   google.protobuf.Timestamp timestamp = 5;
 }

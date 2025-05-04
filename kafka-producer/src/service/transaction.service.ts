@@ -5,10 +5,12 @@ import { Payment } from '../entity/payment';
 
 @Injectable()
 export class TransactionService {
+
   constructor(
     private readonly kafkaPublisher: KafkaPublisher,
-    private readonly logger: Logger, // Assuming you have a logger service
   ) {}
+
+  private readonly logger = new Logger(TransactionService.name);
 
   async createTransaction(payment: Payment): Promise<void> {
     const result = await this.kafkaPublisher.publish(payment);

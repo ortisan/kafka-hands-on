@@ -1,98 +1,126 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Kafka Producer
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This is a NestJS application that serves as a Kafka producer for a transaction processing system. It provides a REST API for submitting transactions, which are then published to a Kafka topic using Avro schema serialization.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Overview
 
-## Description
+The Kafka Producer:
+- Receives transaction requests via a REST API
+- Validates the input data
+- Creates payment records with unique IDs and timestamps
+- Serializes the payments using Avro schemas
+- Publishes the serialized messages to a Kafka topic named 'transactions'
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
 
-## Project setup
+Before running the Kafka Producer, you need to have the following:
+
+1. Node.js (v16 or higher) and npm installed
+2. Docker and Docker Compose installed
+3. The Kafka infrastructure running (using the provided docker-compose.yml)
+
+### Starting the Kafka Infrastructure
+
+The project includes a docker-compose.yml file that sets up the complete Kafka environment. Run the following command from the root directory of the project:
 
 ```bash
-$ npm install
+docker-compose up -d
 ```
 
-## Compile and run the project
+This will start:
+- Zookeeper (port 2181)
+- Kafka broker (ports 9092 and 29092 for localhost)
+- Schema Registry (port 8081)
+- ksqlDB server and CLI
+- Kafka Connect
+- Kafka UI (accessible at http://localhost:8080)
+
+Make sure all services are up and running before starting the Kafka Producer.
+
+## Installation
+
+To install the Kafka Producer, navigate to the kafka-producer directory and run:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cd kafka-producer
+npm install
 ```
 
-## Run tests
+## Configuration
+
+The Kafka Producer uses the following default configuration:
+
+- Kafka broker: localhost:9092 (can be overridden with KAFKA_BROKER env var)
+- Schema Registry: http://localhost:8081 (can be overridden with SCHEMA_REGISTRY env var)
+- Client ID: kafka-producer (can be overridden with KAFKA_CLIENT_ID env var)
+- Application port: 3000 (can be overridden with PORT env var)
+
+## Running the Application
+
+To start the Kafka Producer in development mode:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+For production:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run build
+npm run start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The application will be available at http://localhost:3000 (or the port specified in the PORT environment variable).
 
-## Resources
+## Usage
 
-Check out a few resources that may come in handy when working with NestJS:
+### Sending a Transaction
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+To send a transaction, make a POST request to the `/transactions` endpoint:
 
-## Support
+```bash
+curl -X POST http://localhost:3000/transactions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userId": "user123",
+    "amount": 100.50,
+    "currency": "USD"
+  }'
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Response
 
-## Stay in touch
+The API will respond with the created payment object, including the generated ID and timestamp:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "user123",
+  "amount": 100.50,
+  "currency": "USD",
+  "timestamp": "2023-05-03T22:00:00.000Z"
+}
+```
 
-## License
+## Avro Schema
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+The messages are serialized using the following Avro schema (located in the root directory as `payment.avsc`):
+
+```json
+{
+  "type": "record",
+  "name": "Payment",
+  "namespace": "com.example",
+  "fields": [
+    { "name": "paymentId", "type": "string" },
+    { "name": "userId", "type": "string" },
+    { "name": "amount", "type": "double" },
+    { "name": "currency", "type": "string" },
+    { "name": "timestamp", "type": "long" }
+  ]
+}
+```
+
+## Monitoring
+
+You can monitor the Kafka topics and messages using the Kafka UI at http://localhost:8080.

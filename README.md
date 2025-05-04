@@ -169,3 +169,21 @@ curl -X POST http://localhost:8081/subjects/transactions-value/versions \
 }
 EOF
 ```
+
+
+## Generate Proto Files
+
+
+--proto_path=$(npm explore ts-proto -- pwd)/proto \
+
+
+Inside projects, execute:
+```sh
+npx protoc \
+--plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts_proto \
+--ts_proto_out=./src/infrastructure/publisher/proto \
+--ts_opt=esModuleInterop=true,useOptionals=all,env=node,outputEncodeMethods=true,outputJsonMethods=true \
+--proto_path=../schemas \
+--proto_path=$(npm explore ts-proto -- pwd)/build/protos \
+../schemas/payment.proto
+```
