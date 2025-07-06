@@ -160,15 +160,16 @@ message Payment {
 Register on Schema Registry
 
 ```sh
-curl -X POST http://localhost:8081/subjects/transactions-value/versions \
+curl -X POST http://localhost:8081/subjects/transaction-value/versions \
   -H "Content-Type: application/vnd.schemaregistry.v1+json" \
   -d @- <<EOF
 {
   "schemaType": "PROTOBUF",
-  "schema": "$(cat schemas/payment.proto | sed 's/"/\\"/g' | tr -d '\n')"
+  "schema": $(jq -Rs . < schemas/transaction.proto)
 }
 EOF
 ```
+
 
 
 ## Generate Proto Files
@@ -181,9 +182,16 @@ Inside projects, execute:
 ```sh
 npx protoc \
 --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts_proto \
---ts_proto_out=./src/infrastructure/publisher/proto \
---ts_opt=esModuleInterop=true,useOptionals=all,env=node,outputEncodeMethods=true,outputJsonMethods=true \
+--ts_proto_out=./src/infrastructure/publisher/stub \
+--ts_opt=esModuleInterop=true,useOptionals=all,env=node,useDate=string,outputEncodeMethods=true,outputJsonMethods=true \
 --proto_path=../schemas \
 --proto_path=$(npm explore ts-proto -- pwd)/build/protos \
 ../schemas/payment.proto
 ```
+
+
+PATH=$PATH:$(pwd)/kafka-producer/node_modules/.bin \
+  protoc -I . \
+  --es_out schemas/gen/ \
+  --es_opt target=ts \
+  schemas/transaction.proto
