@@ -20,13 +20,25 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@bufbuild/protobuf": "^2.6.0",
+    "@confluentinc/kafka-javascript": "^1.4.0",
+    "@confluentinc/schemaregistry": "^1.4.0",
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/microservices": "^11.1.0",
     "@nestjs/platform-express": "^11.0.1",
+    "@thames/monads": "^0.7.0",
+    "js-yaml": "^4.1.0",
+    "nestjs-zod": "^4.3.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
+    "@bufbuild/buf": "^1.55.1",
+    "@bufbuild/protoc-gen-es": "^2.6.0",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
@@ -36,6 +48,7 @@
     "@swc/core": "^1.10.7",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
