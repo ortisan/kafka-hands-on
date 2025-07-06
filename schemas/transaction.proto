@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package com.ortisan.transactions;
+
+import "google/protobuf/timestamp.proto";
+
+message Transaction {
+  string id = 1;
+  string userId = 2;
+  double amount = 3;
+  string currency = 5;
+  google.protobuf.Timestamp createdAt = 6;
+  google.protobuf.Timestamp updatedAt = 7;
+}

@@ -67,24 +67,7 @@ To stop all services:
 docker-compose down
 ```
 
-## Registering Your First Schema
-
-1. Create a file named `user.avsc`:
-
-   ```json
-   {
-     "type": "record",
-     "name": "User",
-     "namespace": "com.example",
-     "fields": [
-       {"name": "id", "type": "int"},
-       {"name": "name", "type": "string"},
-       {"name": "email", "type": "string"}
-     ]
-   }
-   ```
-
-2. Register the schema with Schema Registry:
+1. Register the schema with Schema Registry:
 
    ```sh
    curl -X POST http://localhost:8081/subjects/users-value/versions \
@@ -116,28 +99,6 @@ docker-compose exec kafka kafka-topics --create --topic transactions --bootstrap
 ## Define Schema
 
 
-#### Avro
-```avsc
-{
-  "type": "record",
-  "name": "Payment",
-  "namespace": "com.ortisan.kafka-hands-on",
-  "fields": [
-    {"name": "id", "type": "string"},
-    {"name": "userId", "type": "string"},
-    {"name": "amount", "type": "double"},
-    {"name": "currency", "type": "string"},
-    {"name": "timestamp", "type": "long"}
-  ]
-}
-```
-
-```sh
-curl -X POST http://localhost:8081/subjects/transactions-value/versions \
-  -H "Content-Type: application/vnd.schemaregistry.v1+json" \
-  -d "$(jq -n --arg schema "$(cat schemas/payment.avsc)" '{schema: $schema}')"
-```
-
 #### ProtoBuff
 
 Schema
@@ -147,7 +108,7 @@ syntax = "proto3";
 
 package com.ortisan.kafkahandson;
 
-message Payment {
+message Transaction {
   string id = 1;
   string userId = 2;
   double amount = 3;
@@ -165,25 +126,18 @@ curl -X POST http://localhost:8081/subjects/transactions-value/versions \
   -d @- <<EOF
 {
   "schemaType": "PROTOBUF",
-  "schema": "$(cat schemas/payment.proto | sed 's/"/\\"/g' | tr -d '\n')"
+  "schema": $(jq -Rs . < schemas/transaction.proto)
 }
 EOF
 ```
 
+## Generate Stubs from proto files
 
-## Generate Proto Files
-
-
---proto_path=$(npm explore ts-proto -- pwd)/proto \
-
-
-Inside projects, execute:
 ```sh
-npx protoc \
---plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts_proto \
---ts_proto_out=./src/infrastructure/publisher/proto \
---ts_opt=esModuleInterop=true,useOptionals=all,env=node,outputEncodeMethods=true,outputJsonMethods=true \
---proto_path=../schemas \
---proto_path=$(npm explore ts-proto -- pwd)/build/protos \
-../schemas/payment.proto
+PATH=$PATH:$(pwd)/kafka-producer/node_modules/.bin \
+  protoc -I . \
+  --es_out schemas/gen/ \
+  --es_opt target=ts \
+  schemas/transaction.proto
+
 ```

@@ -1,4 +1,4 @@
-export class Payment {
+export class Transaction {
   id: string;
   userId: string;
   amount: number;
