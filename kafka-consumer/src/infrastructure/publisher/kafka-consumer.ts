@@ -1,94 +1,77 @@
-import {  KafkaJS } from  '@confluentinc/kafka-javascript';
-
+import { KafkaJS } from '@confluentinc/kafka-javascript';
+import {
+  ProtobufDeserializer,
+  SchemaRegistryClient,
+  SerdeType,
+} from '@confluentinc/schemaregistry';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Transaction, TransactionSchema } from './stub/transaction_pb';
 
 @Injectable()
 export class KafkaConsumer {
+  private kafka: KafkaJS.Kafka;
+  private registry: SchemaRegistryClient;
+  private deserializer: ProtobufDeserializer;
 
-  constructor(configService: ConfigService)
+  constructor(private readonly configService: ConfigService) {
+    this.kafka = new KafkaJS.Kafka({
+      kafkaJS: { brokers: [this.configService.get<string>('kafka.broker')!] },
+    });
+    this.registry = new SchemaRegistryClient({
+      baseURLs: [
+        `http://${this.configService.get<string>('kafka.schema-registry')!}`,
+      ],
+    });
 
-  async function consumerStart() {
-    let consumer;
-    let stopped = false;
-  
-    // Pause/Resume example, pause and resume alternately every 2 seconds.
-    let pauseResumeLoopStarted = false;
-    const pauseResumeLoop = async () => {
-      let paused = false;
-      pauseResumeLoopStarted = true;
-      while (!stopped) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        if (stopped)
-          break;
-  
-        const assignment = consumer.assignment();
-        if (paused) {
-          console.log(`Resuming partitions ${JSON.stringify(assignment)}`)
-          consumer.resume(assignment);
-        } else {
-          console.log(`Pausing partitions ${JSON.stringify(assignment)}`);
-          consumer.pause(assignment);
-        }
-        paused = !paused;
-      }
-    };
-  
-    // Set up signals for a graceful shutdown.
-    const disconnect = () => {
-      process.off('SIGINT', disconnect);
-      process.off('SIGTERM', disconnect);
-      stopped = true;
-      consumer.commitOffsets()
-        .finally(() =>
-          consumer.disconnect()
-        )
-        .finally(() =>
-          console.log("Disconnected successfully")
-        );
-    }
-    process.on('SIGINT', disconnect);
-    process.on('SIGTERM', disconnect);
-  
-  
-  
+    this.deserializer = new ProtobufDeserializer(
+      this.registry,
+      SerdeType.VALUE,
+      {},
+    );
+  }
+
+  async consumerStart(): Promise<void> {
     // Initialization
-    consumer = new Kafka().consumer({
-      'bootstrap.servers': 'localhost:9092',
-      'group.id': 'test-group',
-      'auto.offset.reset': 'earliest',
-      'enable.partition.eof': 'true',
-      'rebalance_cb': (err, assignment) => {
-        switch (err.code) {
-          case ErrorCodes.ERR__ASSIGN_PARTITIONS:
-            console.log(`Assigned partitions ${JSON.stringify(assignment)}`);
-            if (!pauseResumeLoopStarted) // Start the pause/resume loop for the example.
-              pauseResumeLoop();
-            break;
-          case ErrorCodes.ERR__REVOKE_PARTITIONS:
-            console.log(`Revoked partitions ${JSON.stringify(assignment)}`);
-            break;
-          default:
-            console.error(err);
-        }
+    const consumer = this.kafka.consumer({
+      kafkaJS: {
+        groupId: 'group-test',
+        fromBeginning: true,
       },
     });
-  
-    await consumer.connect();
-    console.log("Connected successfully");
-    await consumer.subscribe({ topics: ["test-topic"] });
-  
-    consumer.run({
-      eachMessage: async ({ topic, partition, message }) => {
-        console.log({
-          topic,
-          partition,
-          headers: message.headers,
-          offset: message.offset,
-          key: message.key?.toString(),
-          value: message.value.toString(),
-        });
-      }
-    });
-  }
-  
-}
 
+    await consumer.connect();
+
+    try {
+      await consumer.subscribe({ topics: ['transactions'] });
+      await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+          const buffer = message.value;
+
+          if (!buffer || !Buffer.isBuffer(buffer)) {
+            throw new Error('Message is not a valid buffer');
+          }
+
+          const deserializedMessage: Transaction =
+            (await this.deserializer.deserialize(
+              topic,
+              message.value as Buffer,
+            )) as Transaction;
+
+          console.log({
+            topic,
+            partition,
+            headers: message.headers,
+            offset: message.offset,
+            key: message.key?.toString(),
+            value: deserializedMessage,
+          });
+        },
+      });
+
+      await new Promise(() => {});
+    } finally {
+      await consumer.disconnect();
+    }
+  }
+}

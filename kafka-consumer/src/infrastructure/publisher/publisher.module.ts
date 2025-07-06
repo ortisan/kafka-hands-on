@@ -1,18 +1,8 @@
 import { Module } from '@nestjs/common';
-import { IPublisher, KafkaPublisher } from './kafka-consumer';
+import { KafkaConsumer } from './kafka-consumer';
 
 @Module({
-  providers: [
-    {
-      provide: IPublisher,
-      useClass: KafkaPublisher,
-    },
-  ],
-  exports: [
-    {
-      provide: IPublisher,
-      useClass: KafkaPublisher,
-    },
-  ],
+  providers: [KafkaConsumer],
+  exports: [KafkaConsumer],
 })
 export class PublisherModule {}

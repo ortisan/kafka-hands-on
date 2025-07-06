@@ -33,7 +33,7 @@ export class KafkaPublisher implements IPublisher {
     });
 
     this.serializer = new ProtobufSerializer(this.registry, SerdeType.VALUE, {
-      autoRegisterSchemas: true,
+      autoRegisterSchemas: false,
     });
     this.serializer.registry.add(TransactionSchema);
   }

@@ -1,19 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConsoleLogger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { KafkaConsumer } from './infrastructure/publisher/kafka-consumer';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: new ConsoleLogger({
       colors: true,
-      prefix: 'kafka-producer',
+      prefix: 'kafka-consumer',
       json: true,
     }),
   });
 
-  const configService = app.get(ConfigService);
-
-  await app.listen(configService.get<number>('http.port')!);
+  const consumer = app.get<KafkaConsumer>(KafkaConsumer);
+  await consumer.consumerStart();
 }
+
 bootstrap();
