@@ -10,6 +10,7 @@ import {
   SerdeType,
 } from '@confluentinc/schemaregistry';
 import { TransactionSchema } from './stub/transaction_pb';
+import { ConfigService } from '@nestjs/config';
 
 export interface IPublisher {
   publish(message: Message, topic: string): AsyncResult<boolean, Error>;
@@ -21,12 +22,14 @@ export class KafkaPublisher implements IPublisher {
   private registry: SchemaRegistryClient;
   private serializer: ProtobufSerializer;
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
     this.kafka = new KafkaJS.Kafka({
-      kafkaJS: { brokers: ['localhost:9092'] },
+      kafkaJS: { brokers: [this.configService.get<string>('kafka.broker')!] },
     });
     this.registry = new SchemaRegistryClient({
-      baseURLs: ['http://localhost:8081'],
+      baseURLs: [
+        `http://${this.configService.get<string>('kafka.schema-registry')!}`,
+      ],
     });
 
     this.serializer = new ProtobufSerializer(this.registry, SerdeType.VALUE, {
